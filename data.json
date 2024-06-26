@@ -1,3 +1,11 @@
 {
-    "students": []
+    "students": [
+        {
+            "id": "9ced5867-06c3-4679-8c61-2ba7d734406e",
+            "first_name": "John",
+            "last_name": "Doe",
+            "email": "john.doe@example.com",
+            "grades": []
+        }
+    ]
 }
