@@ -89,8 +89,12 @@ Pour exporter la liste des étudiants en format json
 curl -X GET "http://127.0.0.1:8000/export?format=json"
 ```
 
-## Exemple
-Voici un exemple concret d'utilisation des commandes curl et des types de réponses attendues.
+## Commande de test
+Voici la commande pour lancer les tests
+
+```bash
+rm -rf .pytest_cache/ && poetry run pytest
+```
 
 
 
