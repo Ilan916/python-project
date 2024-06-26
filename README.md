@@ -75,6 +75,19 @@ Pour supprimer une note spécifique pour un étudiant par son ID étudiant et ID
 ```bash
 curl -X DELETE "http://127.0.0.1:8000/student/{student_id}/grades/{grade_id}"
 ```
+## Exporter en CSV
+Pour exporter la liste des étudiants en format csv
+
+```bash
+curl -X GET "http://127.0.0.1:8000/export?format=csv"
+```
+
+## Exporter en JSON 
+Pour exporter la liste des étudiants en format json
+
+```bash
+curl -X GET "http://127.0.0.1:8000/export?format=json"
+```
 
 ## Exemple
 Voici un exemple concret d'utilisation des commandes curl et des types de réponses attendues.
