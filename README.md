@@ -76,3 +76,8 @@ Pour supprimer une note spécifique pour un étudiant par son ID étudiant et ID
 curl -X DELETE "http://127.0.0.1:8000/student/{student_id}/grades/{grade_id}"
 ```
 
+## Exemple
+Voici un exemple concret d'utilisation des commandes curl et des types de réponses attendues.
+
+
+
