@@ -4,7 +4,7 @@ from typing import List
 class Grade(BaseModel):
     id: UUID4
     course: str
-    score: conint(ge=0, le=100)  # score doit être entre 0 et 100
+    score: conint(ge=0, le=100)
 
 class Student(BaseModel):
     id: UUID4
