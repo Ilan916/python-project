@@ -1,86 +1,105 @@
+import json
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
-from pydantic import BaseModel, EmailStr, UUID4, conint
+from pydantic import BaseModel, EmailStr, conint
 from typing import List, Optional
-from uuid import uuid4
+from uuid import uuid4, UUID
 from io import StringIO
-import csv
 
 app = FastAPI()
+DATA_FILE = "data.json"
+
+class Grade(BaseModel):
+    id: Optional[UUID] = None
+    course: str
+    score: conint(ge=0, le=100)
+
+class Student(BaseModel):
+    id: Optional[UUID] = None
+    first_name: str
+    last_name: str
+    email: EmailStr
+    grades: List[Grade]
+
+def load_data():
+    try:
+        with open(DATA_FILE, "r") as file:
+            return json.load(file)
+    except FileNotFoundError:
+        return {"students": []}
+
+def save_data(data):
+    with open(DATA_FILE, "w") as file:
+        json.dump(data, file, indent=4, default=str)
+
+@app.get("/{name}", response_class=HTMLResponse)
+def read_root(name: str):
+    return f"<h1>Hello <span>{name}</span></h1>"
+
+@app.post("/student/", response_model=UUID)
+def create_student(student: Student):
+    data = load_data()
+    student.id = uuid4()
+    for grade in student.grades:
+        grade.id = uuid4()
+    data["students"].append(student.dict())
+    save_data(data)
+    return student.id
+
+@app.get("/student/{student_id}", response_model=Student)
+def get_student(student_id: UUID):
+    data = load_data()
+    for student in data["students"]:
+        if student["id"] == str(student_id):
+            return Student(**student)
+    raise HTTPException(status_code=404, detail="Student not found")
+
+@app.delete("/student/{student_id}")
+def delete_student(student_id: UUID):
+    data = load_data()
+    for student in data["students"]:
+        if student["id"] == str(student_id):
+            data["students"].remove(student)
+            save_data(data)
+            return {"detail": "Student deleted"}
+    raise HTTPException(status_code=404, detail="Student not found")
+
+@app.get("/student/{student_id}/grades/{grade_id}", response_model=Grade)
+def get_grade(student_id: UUID, grade_id: UUID):
+    data = load_data()
+    for student in data["students"]:
+        if student["id"] == str(student_id):
+            for grade in student["grades"]:
+                if grade["id"] == str(grade_id):
+                    return Grade(**grade)
+    raise HTTPException(status_code=404, detail="Grade not found")
+
+@app.delete("/student/{student_id}/grades/{grade_id}")
+def delete_grade(student_id: UUID, grade_id: UUID):
+    data = load_data()
+    for student in data["students"]:
+        if student["id"] == str(student_id):
+            for grade in student["grades"]:
+                if grade["id"] == str(grade_id):
+                    student["grades"].remove(grade)
+                    save_data(data)
+                    return {"detail": "Grade deleted"}
+    raise HTTPException(status_code=404, detail="Grade not found")
 
 @app.get("/export")
 def export_data(format: str = "csv"):
+    data = load_data()
+    students = data["students"]
     if format == "json":
         return students
     elif format == "csv":
         output = StringIO()
         writer = csv.writer(output)
         writer.writerow(["id", "first_name", "last_name", "email", "grades"])
-        for student in students.values():
-            grades = "; ".join([f"{grade.course}:{grade.score}" for grade in student.grades])
-            writer.writerow([student.id, student.first_name, student.last_name, student.email, grades])
+        for student in students:
+            grades = "; ".join([f"{grade['course']}:{grade['score']}" for grade in student["grades"]])
+            writer.writerow([student["id"], student["first_name"], student["last_name"], student["email"], grades])
         output.seek(0)
         return StreamingResponse(output, media_type="text/csv")
     else:
         raise HTTPException(status_code=400, detail="Invalid format")
-
-@app.get("/{name}", response_class=HTMLResponse)
-def read_root(name: str):
-    return f"<h1>Hello <span>{name}</span></h1>"
-
-class Grade(BaseModel):
-    id: Optional[UUID4] = None
-    course: str
-    score: conint(ge=0, le=100)
-
-class Student(BaseModel):
-    id: Optional[UUID4] = None
-    first_name: str
-    last_name: str
-    email: EmailStr
-    grades: List[Grade]
-
-students = {}
-
-@app.post("/student/", response_model=UUID4)
-def create_student(student: Student):
-    student.id = student.id or uuid4()
-    # Assurez-vous que chaque grade a un UUID
-    for grade in student.grades:
-        grade.id = grade.id or uuid4()
-    students[student.id] = student
-    return student.id
-
-@app.get("/student/{identifier}", response_model=Student)
-def get_student(identifier: UUID4):
-    student = students.get(identifier)
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    return student
-
-@app.delete("/student/{identifier}")
-def delete_student(identifier: UUID4):
-    if identifier not in students:
-        raise HTTPException(status_code=404, detail="Student not found")
-    del students[identifier]
-    return {"detail": "Student deleted"}
-
-@app.get("/student/{identifier}/grades/{grade_id}", response_model=Grade)
-def get_grade(identifier: UUID4, grade_id: UUID4):
-    student = students.get(identifier)
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    for grade in student.grades:
-        if grade.id == grade_id:
-            return grade
-    raise HTTPException(status_code=404, detail="Grade not found")
-
-@app.delete("/student/{identifier}/grades/{grade_id}")
-def delete_grade(identifier: UUID4, grade_id: UUID4):
-    student = students.get(identifier)
-    if not student:
-        raise HTTPException(status_code=404, detail="Student not found")
-    student.grades = [grade for grade in student.grades if grade.id != grade_id]
-    return {"detail": "Grade deleted"}
-
-
