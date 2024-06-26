@@ -34,7 +34,7 @@ poetry run uvicorn main:app --reload
 ```
 ##Endpoints de l'API
 
-###Créer un étudiant
+##Créer un étudiant
 Pour créer un nouvel étudiant, utilisez la commande curl suivante :
 
 ```bash
@@ -48,27 +48,27 @@ curl -X POST "http://127.0.0.1:8000/student/" -H "Content-Type: application/json
     ]
 }'
 ```
-###Récupérer un étudiant
+##Récupérer un étudiant
 Pour récupérer un étudiant par son ID, utilisez la commande curl suivante :
 
 ```bash
 curl -X GET "http://127.0.0.1:8000/student/{student_id}"
 ```
-###Supprimer un étudiant
+##Supprimer un étudiant
 Pour supprimer un étudiant par son ID, utilisez la commande curl suivante :
 
 ```bash
 curl -X DELETE "http://127.0.0.1:8000/student/{student_id}"
 ```
 
-###Récupérer une note
+##Récupérer une note
 Pour récupérer une note spécifique pour un étudiant par son ID étudiant et ID de note, utilisez la commande curl suivante :
 
 ```bash
 curl -X GET "http://127.0.0.1:8000/student/{student_id}/grades/{grade_id}"
 ```
 
-###Supprimer une note
+##Supprimer une note
 Pour supprimer une note spécifique pour un étudiant par son ID étudiant et ID de note, utilisez la commande curl suivante :
 
 ```bash
