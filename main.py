@@ -5,6 +5,7 @@ from pydantic import BaseModel, EmailStr, conint
 from typing import List, Optional
 from uuid import uuid4, UUID
 from io import StringIO
+import csv
 
 app = FastAPI()
 DATA_FILE = "data.json"
@@ -42,7 +43,7 @@ def create_student(student: Student):
     student.id = uuid4()
     for grade in student.grades:
         grade.id = uuid4()
-    data["students"].append(student.dict())
+    data["students"].append(student.model_dump())
     save_data(data)
     return student.id
 
@@ -72,7 +73,8 @@ def get_grade(student_id: UUID, grade_id: UUID):
             for grade in student["grades"]:
                 if grade["id"] == str(grade_id):
                     return Grade(**grade)
-    raise HTTPException(status_code=404, detail="Grade not found")
+            raise HTTPException(status_code=404, detail="Grade not found")
+    raise HTTPException(status_code=404, detail="Student not found")
 
 @app.delete("/student/{student_id}/grades/{grade_id}")
 def delete_grade(student_id: UUID, grade_id: UUID):
@@ -84,7 +86,8 @@ def delete_grade(student_id: UUID, grade_id: UUID):
                     student["grades"].remove(grade)
                     save_data(data)
                     return {"detail": "Grade deleted"}
-    raise HTTPException(status_code=404, detail="Grade not found")
+            raise HTTPException(status_code=404, detail="Grade not found")
+    raise HTTPException(status_code=404, detail="Student not found")
 
 @app.get("/export")
 def export_data(format: str = "csv"):

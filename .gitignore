@@ -1,0 +1,22 @@
+# Ignorer les caches Python
+__pycache__/
+*.py[cod]
+
+# Ignorer les fichiers d'environnement virtuel
+env/
+venv/
+.venv/
+.pipenv/
+poetry.lock
+
+# Ignorer les fichiers de configuration spécifiques à l'IDE
+.vscode/
+.idea/
+
+# Ignorer les fichiers de log
+*.log
+
+# Ignorer les fichiers de configuration système
+.DS_Store
+Thumbs.db
+
