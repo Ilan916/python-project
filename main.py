@@ -1,26 +1,14 @@
 import json
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse, StreamingResponse
-from pydantic import BaseModel, EmailStr, conint
-from typing import List, Optional
+from typing import List
 from uuid import uuid4, UUID
 from io import StringIO
 import csv
+from models import Grade, Student 
 
 app = FastAPI()
 DATA_FILE = "data.json"
-
-class Grade(BaseModel):
-    id: Optional[UUID] = None
-    course: str
-    score: conint(ge=0, le=100)
-
-class Student(BaseModel):
-    id: Optional[UUID] = None
-    first_name: str
-    last_name: str
-    email: EmailStr
-    grades: List[Grade]
 
 def load_data():
     try:
