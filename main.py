@@ -5,7 +5,7 @@ from typing import List
 from uuid import uuid4, UUID
 from io import StringIO
 import csv
-from models import Grade, Student 
+from Models.models import Grade, Student
 
 app = FastAPI()
 DATA_FILE = "data.json"
