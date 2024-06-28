@@ -21,6 +21,27 @@ def save_data(data):
     with open(DATA_FILE, "w") as file:
         json.dump(data, file, indent=4, default=str)
 
+
+
+
+@app.get("/export")
+def export_data(format: str = "csv"):
+    data = load_data()
+    students = data["students"]
+    if format == "json":
+        return students
+    elif format == "csv":
+        output = StringIO()
+        writer = csv.writer(output)
+        writer.writerow(["id", "first_name", "last_name", "email", "grades"])
+        for student in students:
+            grades = "; ".join([f"{grade['course']}:{grade['score']}" for grade in student["grades"]])
+            writer.writerow([student["id"], student["first_name"], student["last_name"], student["email"], grades])
+        output.seek(0)
+        return StreamingResponse(output, media_type="text/csv")
+    else:
+        raise HTTPException(status_code=400, detail="Invalid format")        
+
 @app.get("/{name}", response_class=HTMLResponse)
 def read_root(name: str):
     return f"<h1>Hello <span>{name}</span></h1>"
@@ -77,20 +98,4 @@ def delete_grade(student_id: UUID, grade_id: UUID):
             raise HTTPException(status_code=404, detail="Grade not found")
     raise HTTPException(status_code=404, detail="Student not found")
 
-@app.get("/export")
-def export_data(format: str = "csv"):
-    data = load_data()
-    students = data["students"]
-    if format == "json":
-        return students
-    elif format == "csv":
-        output = StringIO()
-        writer = csv.writer(output)
-        writer.writerow(["id", "first_name", "last_name", "email", "grades"])
-        for student in students:
-            grades = "; ".join([f"{grade['course']}:{grade['score']}" for grade in student["grades"]])
-            writer.writerow([student["id"], student["first_name"], student["last_name"], student["email"], grades])
-        output.seek(0)
-        return StreamingResponse(output, media_type="text/csv")
-    else:
-        raise HTTPException(status_code=400, detail="Invalid format")
+
