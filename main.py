@@ -80,7 +80,12 @@ def delete_grade(identifier: UUID4, grade_id: UUID4):
     student = students.get(identifier)
     if not student:
         raise HTTPException(status_code=404, detail="Student not found")
-    student.grades = [grade for grade in student.grades if grade.id != grade_id]
+    grade_to_delete = None
+    for grade in student.grades:
+        if grade.id == grade_id:
+            grade_to_delete = grade
+            break
+    if not grade_to_delete:
+        raise HTTPException(status_code=404, detail="Grade not found")
+    student.grades.remove(grade_to_delete)
     return {"detail": "Grade deleted"}
-
-
